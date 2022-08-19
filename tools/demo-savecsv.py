@@ -18,12 +18,6 @@ from yolox.utils import fuse_model, get_model_info, postprocess, vis
 
 IMAGE_EXT = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]
 
-idx = 0
-for k in COCO_CLASSES:
-	print(idx,':',k )
-	idx = idx + 1
-#print( COCO_CLASSES )
-
 def make_parser():
     parser = argparse.ArgumentParser("YOLOX Demo!")
     parser.add_argument(
