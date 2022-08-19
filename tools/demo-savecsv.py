@@ -18,6 +18,11 @@ from yolox.utils import fuse_model, get_model_info, postprocess, vis
 
 IMAGE_EXT = [".jpg", ".jpeg", ".webp", ".bmp", ".png"]
 
+idx = 0
+for k in COCO_CLASSES:
+	print(idx,':',k )
+	idx = idx + 1
+#print( COCO_CLASSES )
 
 def make_parser():
     parser = argparse.ArgumentParser("YOLOX Demo!")
@@ -31,10 +36,21 @@ def make_parser():
         "--path", default="./assets/dog.jpg", help="path to images or video"
     )
     parser.add_argument("--camid", type=int, default=0, help="webcam demo camera id")
+
+    #parser.add_argument(
+    #    "--save_result",
+    #    action="store_true",
+    #    help="whether to save the inference result of image/video",
+    #)
+
+    # Added by owd
     parser.add_argument(
-        "--save_result",
-        action="store_true",
-        help="whether to save the inference result of image/video",
+        "--save_video", default=None, type=str,
+        help="video save path (does not output anything by default"
+    )
+    parser.add_argument(
+        "--save_csv", default=None, type=str,
+        help="csv save path (does not output anything by default"
     )
 
     # exp file
@@ -82,13 +98,6 @@ def make_parser():
         default=False,
         action="store_true",
         help="Using TensorRT model for testing.",
-    )
-
-
-
-    parser.add_argument(
-        "--savecsv", default=None, type=str,
-        help="csv save path (does not output anything by default"
     )
 
     return parser
@@ -192,54 +201,61 @@ class Predictor(object):
         return vis_res
 
 
-def image_demo(predictor, vis_folder, path, current_time, save_result):
-    if os.path.isdir(path):
-        files = get_image_list(path)
-    else:
-        files = [path]
-    files.sort()
-    for image_name in files:
-        outputs, img_info = predictor.inference(image_name)
-        result_image = predictor.visual(outputs[0], img_info, predictor.confthre)
+#def image_demo(predictor, vis_folder, path, current_time, save_result):
+#    if os.path.isdir(path):
+#        files = get_image_list(path)
+#    else:
+#        files = [path]
+#    files.sort()
+#    for image_name in files:
+#        outputs, img_info = predictor.inference(image_name)
+#        result_image = predictor.visual(outputs[0], img_info, predictor.confthre)
+#
+#        print( outputs )
+#        print( img_info )
+#
+#        if save_result:
+#            save_folder = os.path.join(
+#                vis_folder, time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
+#            )
+#            os.makedirs(save_folder, exist_ok=True)
+#            save_file_name = os.path.join(save_folder, os.path.basename(image_name))
+#            logger.info("Saving detection result in {}".format(save_file_name))
+#            cv2.imwrite(save_file_name, result_image)
+#        ch = cv2.waitKey(0)
+#        if ch == 27 or ch == ord("q") or ch == ord("Q"):
+#            break
 
-        print( outputs )
-        print( img_info )
 
-        if save_result:
-            save_folder = os.path.join(
-                vis_folder, time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
-            )
-            os.makedirs(save_folder, exist_ok=True)
-            save_file_name = os.path.join(save_folder, os.path.basename(image_name))
-            logger.info("Saving detection result in {}".format(save_file_name))
-            cv2.imwrite(save_file_name, result_image)
-        ch = cv2.waitKey(0)
-        if ch == 27 or ch == ord("q") or ch == ord("Q"):
-            break
-
-
-def imageflow_demo(predictor, vis_folder, current_time, args):
+#def imageflow_demo(predictor, vis_folder, current_time, args):
+def imageflow_demo(predictor, current_time, args):
     cap = cv2.VideoCapture(args.path if args.demo == "video" else args.camid)
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
     height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
     fps = cap.get(cv2.CAP_PROP_FPS)
 
-    if args.save_result:
-        save_folder = os.path.join(
-            vis_folder, time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
-        )
-        os.makedirs(save_folder, exist_ok=True)
-        if args.demo == "video":
-            save_path = os.path.join(save_folder, os.path.basename(args.path))
-        else:
-            save_path = os.path.join(save_folder, "camera.mp4")
-        logger.info(f"video save_path is {save_path}")
+    #if args.save_result:
+    #    save_folder = os.path.join(
+    #        vis_folder, time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
+    #    )
+    #    os.makedirs(save_folder, exist_ok=True)
+    #    if args.demo == "video":
+    #        save_path = os.path.join(save_folder, os.path.basename(args.path))
+    #    else:
+    #        save_path = os.path.join(save_folder, "camera.mp4")
+    #    logger.info(f"video save_path is {save_path}")
+    #    vid_writer = cv2.VideoWriter(
+    #        save_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
+    #    )
+
+    if args.save_video != None :
+        os.makedirs(os.path.dirname(args.save_video), exist_ok=True)
         vid_writer = cv2.VideoWriter(
-            save_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
+            args.save_video, cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
         )
-    if args.savecsv != None :
-        os.makedirs(os.path.dirname(args.savecsv), exist_ok=True)
-        csvFile = open( args.savecsv, mode='w')
+    if args.save_csv != None :
+        os.makedirs(os.path.dirname(args.save_csv), exist_ok=True)
+        csvFile = open( args.save_csv, mode='w')
         #csvFile = open( os.path.join(save_folder, os.path.basename(args.path)) + '.csv', mode='w')
 
     while True:
@@ -247,22 +263,24 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
         if ret_val:
             outputs, img_info = predictor.inference(frame)
             result_frame = predictor.visual(outputs[0], img_info, predictor.confthre)
-            if args.savecsv != None:
-                print(','.join(  list(map(str,outputs[0].tolist())) ), file=csvFile)
+            if args.save_csv != None:
+                # Flatten recognized result
+                print(','.join(  list(map(str,outputs[0].tolist())) ).replace('[','').replace(']','')
+			, file=csvFile)
 
-            if args.save_result:
+            if args.save_video:
                 vid_writer.write(result_frame)
-            else:
-                cv2.namedWindow("yolox", cv2.WINDOW_NORMAL)
-                cv2.imshow("yolox", result_frame)
-            ch = cv2.waitKey(1)
-            if ch == 27 or ch == ord("q") or ch == ord("Q"):
-                break
+            #else:
+            #    cv2.namedWindow("yolox", cv2.WINDOW_NORMAL)
+            #    cv2.imshow("yolox", result_frame)
+            #ch = cv2.waitKey(1)
+            #if ch == 27 or ch == ord("q") or ch == ord("Q"):
+            #    break
         else:
             break
 
-    if args.savecsv != None :
-        close(csvFile)
+    if args.save_csv != None :
+        csvFile.close()
 
 def main(exp, args):
     if not args.experiment_name:
@@ -272,9 +290,9 @@ def main(exp, args):
     os.makedirs(file_name, exist_ok=True)
 
     vis_folder = None
-    if args.save_result:
-        vis_folder = os.path.join(file_name, "vis_res")
-        os.makedirs(vis_folder, exist_ok=True)
+    #if args.save_result:
+    #    vis_folder = os.path.join(file_name, "vis_res")
+    #    os.makedirs(vis_folder, exist_ok=True)
 
     if args.trt:
         args.device = "gpu"
@@ -330,11 +348,12 @@ def main(exp, args):
         args.device, args.fp16, args.legacy,
     )
     current_time = time.localtime()
-    if args.demo == "image":
-        image_demo(predictor, vis_folder, args.path, current_time, args.save_result)
-    elif args.demo == "video" or args.demo == "webcam":
-        imageflow_demo(predictor, vis_folder, current_time, args)
+    #if args.demo == "image":
+    #    image_demo(predictor, vis_folder, args.path, current_time, args.save_result)
+    #elif args.demo == "video" or args.demo == "webcam":
+    #    imageflow_demo(predictor, vis_folder, current_time, args)
 
+    imageflow_demo(predictor, current_time, args)
 
 if __name__ == "__main__":
     args = make_parser().parse_args()
