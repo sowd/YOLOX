@@ -106,7 +106,7 @@ Modifications of tools/demo-savecsv.py
 + --save_video and --save_csv are added. Output path must be specified after the option.
 
 ```shell
-python3 tools/demo-savecsv.py video -n yolox-s -c /path/to/your/yolox_s.pth --path /path/to/your/video --conf 0.25 --nms 0.45 --tsize 640 --save_video /path/to/your/out.mp4 --save_csv /path/to/your/out.csv--device [cpu/gpu]
+python3 tools/demo-savecsv.py video -n yolox-s -c /path/to/your/yolox_s.pth --path /path/to/your/video --conf 0.25 --nms 0.45 --tsize 640 --save_video /path/to/your/out.mp4 --save_csv /path/to/your/out.csv --device [cpu/gpu]
 ```
 
 
