@@ -252,29 +252,29 @@ def imageflow_demo(predictor, current_time, args):
         csvFile = open( args.save_csv, mode='w')
         #csvFile = open( os.path.join(save_folder, os.path.basename(args.path)) + '.csv', mode='w')
 
+    frameNo = 0
     while True:
-        ret_val, frame = cap.read()
-        if ret_val:
-            outputs, img_info = predictor.inference(frame)
-            result_frame = predictor.visual(outputs[0], img_info, predictor.confthre)
-            if args.save_csv != None:
-                # Flatten recognized result
-                print(','.join(  list(map(str,outputs[0].tolist())) ).replace('[','').replace(']','')
-			, file=csvFile)
-
-            if args.save_video:
-                vid_writer.write(result_frame)
-            #else:
-            #    cv2.namedWindow("yolox", cv2.WINDOW_NORMAL)
-            #    cv2.imshow("yolox", result_frame)
-            #ch = cv2.waitKey(1)
-            #if ch == 27 or ch == ord("q") or ch == ord("Q"):
-            #    break
-        else:
+        try:
+            ret_val, frame = cap.read()
+            if not ret_val : break
+        except:
             break
+
+        frameNo = frameNo+1
+        outputs, img_info = predictor.inference(frame)
+        bFailed = (outputs == None or len(outputs) == 0 or outputs[0] == None)
+
+        if args.save_csv != None:
+            # Flatten recognized result
+            print('' if bFailed else ','.join(  list(map(str,outputs[0].tolist())) ).replace('[','').replace(']','') , file=csvFile)
+
+        if args.save_video != None:
+            vid_writer.write( frame if bFailed else predictor.visual(outputs[0], img_info, predictor.confthre) )
 
     if args.save_csv != None :
         csvFile.close()
+
+    print( "Frames:%d" % frameNo )
 
 def main(exp, args):
     if not args.experiment_name:
