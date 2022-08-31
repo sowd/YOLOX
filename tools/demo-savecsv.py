@@ -244,9 +244,11 @@ def imageflow_demo(predictor, current_time, args):
 
     if args.save_video != None :
         os.makedirs(os.path.dirname(args.save_video), exist_ok=True)
-        vid_writer = cv2.VideoWriter(
-            args.save_video, cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
-        )
+        codec = cv2.VideoWriter_fourcc(*'mp4v')
+        #root, saveext = os.path.splitext(args.save_video)
+        #print(saveext)
+        #codec = cv2.VideoWriter_fourcc(*'theo') if saveext.lower() == '.ogv' else cv2.VideoWriter_fourcc(*'mp4v')
+        vid_writer = cv2.VideoWriter( args.save_video, codec, fps, (int(width), int(height)) )
     if args.save_csv != None :
         os.makedirs(os.path.dirname(args.save_csv), exist_ok=True)
         csvFile = open( args.save_csv, mode='w')
