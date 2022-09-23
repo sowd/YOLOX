@@ -2,6 +2,12 @@
 # -*- coding:utf-8 -*-
 # Copyright (c) Megvii, Inc. and its affiliates.
 
+# Sample command line:
+# python3 ./tools/demo-savecsv.py video -n yolox-s -c ../yolox_s.pth --path ~/dev/samples/test.mov --conf 0.25 --nms 0.45 --tsize 640 --device gpu --save_csv ./out.csv
+
+
+CSV_VERNUM = 1
+
 import argparse
 import os
 import time
@@ -253,6 +259,7 @@ def imageflow_demo(predictor, current_time, args):
         os.makedirs(os.path.dirname(args.save_csv), exist_ok=True)
         csvFile = open( args.save_csv, mode='w')
         #csvFile = open( os.path.join(save_folder, os.path.basename(args.path)) + '.csv', mode='w')
+        print( CSV_VERNUM , file=csvFile)
 
     frameNo = 0
     while True:
@@ -266,9 +273,21 @@ def imageflow_demo(predictor, current_time, args):
         outputs, img_info = predictor.inference(frame)
         bFailed = (outputs == None or len(outputs) == 0 or outputs[0] == None)
 
-        if args.save_csv != None:
+        if not bFailed and args.save_csv != None:
             # Flatten recognized result
-            print('' if bFailed else ','.join(  list(map(str,outputs[0].tolist())) ).replace('[','').replace(']','') , file=csvFile)
+            ratio = img_info["ratio"]
+            outp = outputs[0].cpu()
+            bboxes = outp[:, 0:4] / ratio
+            cls = outp[:,6]
+            scores = outp[:, 4] * outp[:, 5]
+            lin = ''
+            sep = ''
+
+            for i in range( len(bboxes) ):
+              lin = lin + sep + '%s,%d,%f' % ( ','.join(map(str,map(float,bboxes[i]))) , cls[i] , scores[i] )
+              sep = ','
+
+            print('' if bFailed else lin , file=csvFile)
 
         if args.save_video != None:
             vid_writer.write( frame if bFailed else predictor.visual(outputs[0], img_info, predictor.confthre) )
