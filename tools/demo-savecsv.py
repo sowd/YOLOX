@@ -295,8 +295,12 @@ def imageflow_demo(predictor, current_time, args):
     if args.save_csv != None :
         csvFile.close()
 
-    print( "Frames:%d" % frameNo )
-    print( "FPS:%d" % fps )
+
+    # Output to NanoGW framework
+    print( "ngwFrames:%d" % frameNo )
+    print( "ngwFPS:%d" % fps )
+    print( "ngwWidth:%d" % int(width) )
+    print( "ngwHeight:%d" % int(height) )
 
 def main(exp, args):
     if not args.experiment_name:
