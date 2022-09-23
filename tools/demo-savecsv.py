@@ -296,6 +296,7 @@ def imageflow_demo(predictor, current_time, args):
         csvFile.close()
 
     print( "Frames:%d" % frameNo )
+    print( "FPS:%d" % fps )
 
 def main(exp, args):
     if not args.experiment_name:
