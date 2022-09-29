@@ -284,7 +284,8 @@ def imageflow_demo(predictor, current_time, args):
             sep = ''
 
             for i in range( len(bboxes) ):
-              lin = lin + sep + '%s,%d,%f' % ( ','.join(map(str,map(float,bboxes[i]))) , cls[i] , scores[i] )
+              if scores[i] < 0.5 : continue
+              lin = lin + sep + '%s,%d,%f' % ( ','.join(map(str,map(int,bboxes[i]))), cls[i], scores[i] )
               sep = ','
 
             print('' if bFailed else lin , file=csvFile)
